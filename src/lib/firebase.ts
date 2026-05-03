@@ -13,8 +13,10 @@ export async function loginWithGoogle() {
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
   } catch (error: any) {
-    if (error?.code === 'auth/cancelled-popup-request') {
-      console.warn('Login popup request was cancelled.');
+    if (error?.code === 'auth/cancelled-popup-request' || 
+        error?.code === 'auth/popup-closed-by-user' || 
+        error?.code === 'auth/popup-blocked') {
+      console.warn('Login popup was closed, cancelled or blocked:', error.code);
       return null;
     }
     console.error('Login error:', error);
