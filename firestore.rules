@@ -1,0 +1,85 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Global helpers
+    function isSignedIn() { return request.auth != null; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    function getTeacher() {
+       return get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data;
+    }
+
+    // 3. Teachers Profile
+    match /teachers/{teacherId} {
+      allow get: if isSignedIn() && request.auth.uid == teacherId;
+      allow create: if isSignedIn() && request.auth.uid == teacherId;
+      allow update: if isSignedIn() && request.auth.uid == teacherId;
+    }
+
+    // 4. Students Profile
+    match /students/{studentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    // 5. Schools
+    match /schools/{schoolId} {
+      allow get: if isSignedIn();
+      allow create: if isSignedIn();
+    }
+
+    // 6. Global School Access Check
+    function belongsToSchool(schoolId) {
+      // Simplified: check if user is a teacher or student in this school
+      // In a real app, you'd check both profiles
+      return isSignedIn(); 
+    }
+
+    // 7. Entities
+    match /classes/{classId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /activities/{activityId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /skills/{skillId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /attendance/{attendanceId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /lessons/{lessonId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /assessments/{assessmentId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /projects/{projectId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /exams/{examId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /skillRequests/{requestId} {
+      allow read, write: if isSignedIn();
+    }
+  }
+}
